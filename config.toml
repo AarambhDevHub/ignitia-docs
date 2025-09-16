@@ -37,6 +37,7 @@ version = "0.2.0"
 author = "Darshan Vichhi"
 keywords = ["rust", "web framework", "async", "performance", "api", "websocket"]
 github_url = "https://github.com/AarambhDevHub/ignitia"
+github_url_doc = "https://github.com/AarambhDevHub/ignitia-docs"
 youtube_url = "https://www.youtube.com/@AarambhDevHub"
 twitter_handle = "@AarambhDevHub"
 linkedin_url = "https://linkedin.com/in/darshan-vichhi-rust-developer"
