@@ -1,0 +1,230 @@
+{% extends "base.html" %} {% block body_class %}home{% endblock %} {% block
+content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-text"
+                    >🚀 Now in v{{ config.extra.version | default(value="0.2.0")
+                    }}</span
+                >
+            </div>
+
+            <h1 class="hero-title">
+                <span class="hero-flame">🔥</span>
+                <span class="hero-ignitia">Ignitia</span>
+            </h1>
+
+            <p class="hero-subtitle">
+                A blazing fast, lightweight web framework for Rust that ignites
+                your development journey
+            </p>
+
+            <div class="hero-actions">
+                <a href="{{ get_url(path='docs') }}" class="btn btn-primary">
+                    Get Started
+                    <svg
+                        class="btn-icon"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                    >
+                        <path
+                            fill-rule="evenodd"
+                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                            clip-rule="evenodd"
+                        />
+                    </svg>
+                </a>
+                <a
+                    href="https://github.com/AarambhDevHub/ignitia"
+                    class="btn btn-secondary"
+                >
+                    <svg
+                        class="btn-icon"
+                        viewBox="0 0 24 24"
+                        width="18"
+                        height="18"
+                    >
+                        <path
+                            fill="currentColor"
+                            d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+                        />
+                    </svg>
+                    View on GitHub
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-code">
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="code-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span class="code-title">main.rs</span>
+                </div>
+                <div class="code-content">
+                    <pre>
+<code class="language-rust">
+use ignitia::{Router, Response, Server};
+
+#[tokio::main]
+async fn main() -> Result<(), Box&lt;dyn std::error::Error&gt;> {
+    let router = Router::new()
+        .get("/", || async {
+            Ok(Response::text("🔥 Ignitia is blazing!"))
+        })
+        .get("/api/users/:id", |Path(id): Path&lt;u32&gt;| async move {
+            Ok(Response::json(json!({
+                "user_id": id,
+                "message": "User found!"
+            }))?)
+        });
+
+    Server::new(router, "127.0.0.1:3000".parse()?)
+        .ignitia()
+        .await?;
+
+    Ok(())
+}
+</code>
+</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="features-container">
+        <div class="section-header">
+            <h2 class="section-title">Why Choose Ignitia?</h2>
+            <p class="section-subtitle">
+                Built for performance, designed for developers
+            </p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">Blazing Fast</h3>
+                <p class="feature-description">
+                    Built with Rust's zero-cost abstractions and optimized for
+                    maximum performance.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3 class="feature-title">Type Safe</h3>
+                <p class="feature-description">
+                    Leverage Rust's powerful type system to catch errors at
+                    compile time.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔧</div>
+                <h3 class="feature-title">Developer Friendly</h3>
+                <p class="feature-description">
+                    Intuitive APIs with excellent error messages and
+                    comprehensive documentation.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <h3 class="feature-title">WebSocket Support</h3>
+                <p class="feature-description">
+                    Built-in WebSocket support for real-time applications with
+                    async handlers.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔐</div>
+                <h3 class="feature-title">Security First</h3>
+                <p class="feature-description">
+                    Built-in middleware for CORS, rate limiting, authentication,
+                    and more.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📦</div>
+                <h3 class="feature-title">Lightweight</h3>
+                <p class="feature-description">
+                    Minimal dependencies with optional features to keep your
+                    binary size small.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Start Section -->
+<section class="quickstart">
+    <div class="quickstart-container">
+        <div class="quickstart-content">
+            <h2 class="quickstart-title">Get Started in Seconds</h2>
+            <p class="quickstart-subtitle">
+                Add Ignitia to your Cargo.toml and start building
+            </p>
+
+            <div class="quickstart-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Add to Cargo.toml</h3>
+                        <div class="code-snippet">
+                            <code
+                                >[dependencies]<br />ignitia = "{{
+                                config.extra.version | default(value='0.2.0')
+                                }}"<br />tokio = { version = "1.0", features =
+                                ["full"] }</code
+                            >
+                            <button
+                                class="copy-btn"
+                                data-clipboard-text='[dependencies]&#10;ignitia = "{{ config.extra.version | default(value="0.2.0") }}"&#10;tokio = { version = "1.0", features = ["full"] }'
+                            >
+                                📋
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Create your first route</h3>
+                        <div class="code-snippet">
+                            <code>cargo run</code>
+                            <button
+                                class="copy-btn"
+                                data-clipboard-text="cargo run"
+                            >
+                                📋
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Start building!</h3>
+                        <p>
+                            Visit <code>http://localhost:3000</code> and see
+                            your app running
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

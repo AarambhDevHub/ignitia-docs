@@ -1,0 +1,55 @@
+{% extends "base.html" %} {% block body_class %}error-404{% endblock %} {% block
+title %}404 - Page Not Found - {{ config.title }}{% endblock %} {% block content
+%}
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-graphic">
+            <div class="flame-404">🔥</div>
+            <h1 class="error-code">404</h1>
+        </div>
+
+        <div class="error-message">
+            <h2>Page Not Found</h2>
+            <p>
+                The page you're looking for seems to have vanished into the
+                digital void. Don't worry, even the best frameworks have their
+                mysteries!
+            </p>
+        </div>
+
+        <div class="error-actions">
+            <a href="{{ get_url(path='') }}" class="btn btn-primary">
+                🏠 Go Home
+            </a>
+            <a href="{{ get_url(path='docs') }}" class="btn btn-secondary">
+                📚 Browse Docs
+            </a>
+        </div>
+
+        <div class="error-search">
+            <h3>Or search for what you need:</h3>
+            <div class="search-container">
+                <input
+                    type="text"
+                    id="search-input"
+                    placeholder="Search documentation..."
+                    autocomplete="off"
+                />
+                <div id="search-results" class="search-results"></div>
+            </div>
+        </div>
+
+        <div class="error-suggestions">
+            <h3>Popular Pages:</h3>
+            <ul class="suggestion-list">
+                <li><a href="/docs/getting-started/">🚀 Getting Started</a></li>
+                <li><a href="/docs/installation/">⚙️ Installation</a></li>
+                <li><a href="/docs/routing/">🛣️ Routing</a></li>
+                <li><a href="/docs/examples/">📖 Examples</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block extra_scripts %}
+<script src="{{ get_url(path='js/search.js') }}"></script>
+{% endblock %}

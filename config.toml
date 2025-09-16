@@ -1,0 +1,46 @@
+base_url = "https://aarambhdevhub.github.io/ignitia-docs"
+title = "Ignitia - Rust Web Framework"
+description = "A blazing fast, lightweight web framework for Rust that ignites your development journey"
+
+compile_sass = true
+minify_html = true
+generate_feeds = true
+build_search_index = true
+
+theme = "ignitia-theme"
+
+default_language = "en"
+
+[slugify]
+paths = "on"
+taxonomies = "on"
+anchors = "on"
+
+
+[search]
+index_format = "elasticlunr_javascript"
+include_title = true
+include_description = true
+include_content = true
+include_path = true
+
+[markdown]
+highlight_code = true
+highlight_theme = "base16-ocean-dark"
+external_links_target_blank = true
+external_links_no_follow = true
+external_links_no_referrer = true
+smart_punctuation = true
+
+[extra]
+version = "0.2.0"
+author = "Darshan Vichhi"
+keywords = ["rust", "web framework", "async", "performance", "api", "websocket"]
+github_url = "https://github.com/AarambhDevHub/ignitia"
+youtube_url = "https://www.youtube.com/@AarambhDevHub"
+twitter_handle = "@AarambhDevHub"
+linkedin_url = "https://linkedin.com/in/darshan-vichhi-rust-developer"
+logo_url = "/images/logo/ignitia-512x512.png"
+banner_url = "/images/social/ignitia-og-1200x630.png"
+enable_search = true
+enable_multilingua = false

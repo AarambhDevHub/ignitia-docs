@@ -1,0 +1,305 @@
+/* Base syntax highlighting styles */
+.highlight {
+    background: var(--code-bg);
+    color: var(--code-text);
+    border-radius: 0.375rem;
+    overflow-x: auto;
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
+}
+
+.highlight pre {
+    margin: 0;
+    padding: 1rem;
+    line-height: 1.6;
+}
+
+/* Light theme syntax highlighting */
+:root {
+    --syntax-bg: #f8f9fa;
+    --syntax-text: #2d3748;
+    --syntax-keyword: #d73a49;
+    --syntax-string: #032f62;
+    --syntax-comment: #6a737d;
+    --syntax-function: #6f42c1;
+    --syntax-number: #005cc5;
+    --syntax-operator: #d73a49;
+    --syntax-error: #cb2431;
+}
+
+/* Dark theme syntax highlighting */
+[data-theme="dark"] {
+    --syntax-bg: #1e293b;
+    --syntax-text: #e2e8f0;
+    --syntax-keyword: #ff6b9d;
+    --syntax-string: #c3e88d;
+    --syntax-comment: #546e7a;
+    --syntax-function: #82aaff;
+    --syntax-number: #f78c6c;
+    --syntax-operator: #89ddff;
+    --syntax-error: #ff5370;
+}
+
+/* System preference support */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --syntax-bg: #1e293b;
+        --syntax-text: #e2e8f0;
+        --syntax-keyword: #ff6b9d;
+        --syntax-string: #c3e88d;
+        --syntax-comment: #546e7a;
+        --syntax-function: #82aaff;
+        --syntax-number: #f78c6c;
+        --syntax-operator: #89ddff;
+        --syntax-error: #ff5370;
+    }
+}
+
+/* Apply syntax colors */
+.highlight {
+    background: var(--syntax-bg);
+    color: var(--syntax-text);
+}
+
+.highlight .k,
+.highlight .kd,
+.highlight .kn,
+.highlight .kp,
+.highlight .kr,
+.highlight .kt {
+    color: var(--syntax-keyword);
+    font-weight: 600;
+}
+
+.highlight .s,
+.highlight .sb,
+.highlight .sc,
+.highlight .sd,
+.highlight .s2,
+.highlight .sh,
+.highlight .si,
+.highlight .sx,
+.highlight .sr,
+.highlight .s1,
+.highlight .ss {
+    color: var(--syntax-string);
+}
+
+.highlight .c,
+.highlight .c1,
+.highlight .cm {
+    color: var(--syntax-comment);
+    font-style: italic;
+}
+
+.highlight .n,
+.highlight .na,
+.highlight .nb,
+.highlight .nc,
+.highlight .nd,
+.highlight .ne,
+.highlight .nf,
+.highlight .ni,
+.highlight .nl,
+.highlight .nn,
+.highlight .nt,
+.highlight .nv,
+.highlight .nx {
+    color: var(--syntax-text);
+}
+
+.highlight .nf {
+    color: var(--syntax-function);
+    font-weight: 600;
+}
+
+.highlight .m,
+.highlight .mf,
+.highlight .mh,
+.highlight .mi,
+.highlight .mo {
+    color: var(--syntax-number);
+}
+
+.highlight .o,
+.highlight .ow {
+    color: var(--syntax-operator);
+}
+
+.highlight .p {
+    color: var(--syntax-text);
+}
+
+.highlight .err {
+    color: var(--syntax-error);
+    background: rgba(255, 83, 112, 0.1);
+    border-radius: 2px;
+    padding: 0 2px;
+}
+
+/* Rust-specific highlighting */
+.highlight .language-rust .k {
+    color: var(--syntax-keyword);
+}
+
+.highlight .language-rust .kt {
+    color: var(--syntax-function);
+}
+
+.highlight .language-rust .nf {
+    color: var(--syntax-function);
+}
+
+.highlight .language-rust .s {
+    color: var(--syntax-string);
+}
+
+.highlight .language-rust .c1 {
+    color: var(--syntax-comment);
+}
+
+/* Enhanced code block styling */
+pre {
+    position: relative;
+    margin: 1.5rem 0;
+    padding: 0;
+    background: var(--syntax-bg);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+pre code {
+    display: block;
+    padding: 1.5rem;
+    overflow-x: auto;
+    background: none;
+    color: var(--syntax-text);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+/* Inline code */
+code {
+    background: var(--inline-code-bg);
+    color: var(--inline-code-text);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Copy button specific to code blocks */
+pre .copy-button {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--syntax-text);
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: var(--font-mono);
+    backdrop-filter: blur(4px);
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: var(--color-primary);
+        transform: scale(1.05);
+    }
+
+    &.copied {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+    }
+}
+
+/* Language label for code blocks */
+pre[data-lang]::before {
+    content: attr(data-lang);
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--color-primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom-left-radius: 0.375rem;
+}
+
+/* Terminal/command styling */
+.highlight.language-bash,
+.highlight.language-shell,
+.highlight.language-terminal {
+    background: #1a1a1a;
+    color: #00ff00;
+    border-left: 4px solid var(--color-primary);
+}
+
+[data-theme="dark"] .highlight.language-bash,
+[data-theme="dark"] .highlight.language-shell,
+[data-theme="dark"] .highlight.language-terminal {
+    background: #0a0a0a;
+}
+
+/* JSON highlighting */
+.highlight.language-json .s {
+    color: var(--syntax-string);
+}
+
+.highlight.language-json .kc {
+    color: var(--syntax-keyword);
+}
+
+/* TOML highlighting */
+.highlight.language-toml .k {
+    color: var(--syntax-keyword);
+}
+
+.highlight.language-toml .s {
+    color: var(--syntax-string);
+}
+
+/* Accessibility improvements */
+.highlight:focus-within {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Loading animation for code blocks */
+.loading pre {
+    opacity: 0;
+    animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Print styles */
+@media print {
+    .highlight {
+        background: white !important;
+        color: black !important;
+        border: 1px solid #ccc;
+    }
+
+    .copy-button {
+        display: none !important;
+    }
+}

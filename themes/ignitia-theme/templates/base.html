@@ -1,0 +1,479 @@
+<!doctype html>
+<html
+    lang="{{ lang | default(value='en') }}"
+    prefix="og: https://ogp.me/ns#"
+    itemscope
+    itemtype="https://schema.org/WebPage"
+>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+        <!-- Primary Meta Tags -->
+        <title>{% block title %}{{ config.title }}{% endblock %}</title>
+        <meta
+            name="title"
+            content="{% block meta_title %}{{ config.title }}{% endblock %}"
+        />
+        <meta
+            name="description"
+            content="{% block description %}{{ config.description }}{% endblock %}"
+        />
+        <meta
+            name="keywords"
+            content="{% block keywords %}rust web framework, ignitia, async rust, performance, websocket, api development{% endblock %}"
+        />
+        <meta name="author" content="AarambhDevHub" />
+        <meta
+            name="robots"
+            content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+        />
+        <meta name="googlebot" content="index, follow" />
+
+        <!-- Canonical URL - Safe handling -->
+        {% if current_path %}
+        <link
+            rel="canonical"
+            href="{% block canonical %}{{ get_url(path=current_path) | safe }}{% endblock %}"
+        />
+        {% else %}
+        <link
+            rel="canonical"
+            href="{% block canonical %}{{ config.base_url | safe }}{% endblock %}"
+        />
+        {% endif %}
+
+        <!-- Language and Regional -->
+        {% if current_path %}
+        <link
+            rel="alternate"
+            hreflang="en"
+            href="{{ get_url(path=current_path) | safe }}"
+        />
+        {% else %}
+        <link
+            rel="alternate"
+            hreflang="en"
+            href="{{ config.base_url | safe }}"
+        />
+        {% endif %}
+        <meta name="language" content="English" />
+
+        <!-- Open Graph / Facebook -->
+        <meta
+            property="og:type"
+            content="{% block og_type %}website{% endblock %}"
+        />
+        <meta property="og:site_name" content="Ignitia - Rust Web Framework" />
+        <meta
+            property="og:title"
+            content="{% block og_title %}{{ config.title }}{% endblock %}"
+        />
+        <meta
+            property="og:description"
+            content="{% block og_description %}{{ config.description }}{% endblock %}"
+        />
+        {% if current_path %}
+        <meta
+            property="og:url"
+            content="{% block og_url %}{{ get_url(path=current_path) | safe }}{% endblock %}"
+        />
+        {% else %}
+        <meta
+            property="og:url"
+            content="{% block og_url %}{{ config.base_url | safe }}{% endblock %}"
+        />
+        {% endif %}
+        <meta
+            property="og:image"
+            content="{% block og_image %}{{ get_url(path='images/social/ignitia-og-1200x630.png') | safe }}{% endblock %}"
+        />
+        <meta
+            property="og:image:secure_url"
+            content="{% block og_image_secure %}{{ get_url(path='images/social/ignitia-og-1200x630.png') | safe }}{% endblock %}"
+        />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta
+            property="og:image:alt"
+            content="Ignitia - Blazing Fast Rust Web Framework"
+        />
+        <meta property="og:locale" content="en_US" />
+
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@AarambhDevHub" />
+        <meta name="twitter:creator" content="@AarambhDevHub" />
+        <meta
+            name="twitter:title"
+            content="{% block twitter_title %}{{ config.title }}{% endblock %}"
+        />
+        <meta
+            name="twitter:description"
+            content="{% block twitter_description %}{{ config.description }}{% endblock %}"
+        />
+        <meta
+            name="twitter:image"
+            content="{% block twitter_image %}{{ get_url(path='images/social/ignitia-twitter-1200x675.png') | safe }}{% endblock %}"
+        />
+        <meta
+            name="twitter:image:alt"
+            content="Ignitia - Blazing Fast Rust Web Framework"
+        />
+
+        <!-- Theme and App Config -->
+        <meta name="theme-color" content="#ff6b35" />
+        <meta name="msapplication-TileColor" content="#ff6b35" />
+        <meta name="application-name" content="Ignitia" />
+        <meta name="apple-mobile-web-app-title" content="Ignitia" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+            name="apple-mobile-web-app-status-bar-style"
+            content="black-translucent"
+        />
+
+        <!-- Performance and Resource Hints -->
+        <link
+            rel="preconnect"
+            href="https://fonts.googleapis.com"
+            crossorigin
+        />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="dns-prefetch" href="//github.com" />
+        <link rel="dns-prefetch" href="//crates.io" />
+        <link rel="dns-prefetch" href="//docs.rs" />
+
+        <!-- Favicons and Icons -->
+        <link
+            rel="icon"
+            type="image/x-icon"
+            href="{{ get_url(path='favicon.ico') }}"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="{{ get_url(path='images/logo/ignitia-16x16.png') }}"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="{{ get_url(path='images/logo/ignitia-32x32.png') }}"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="48x48"
+            href="{{ get_url(path='images/logo/ignitia-48x48.png') }}"
+        />
+        <link
+            rel="apple-touch-icon"
+            sizes="180x180"
+            href="{{ get_url(path='images/logo/ignitia-180x180.png') }}"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="192x192"
+            href="{{ get_url(path='images/logo/ignitia-192x192.png') }}"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="512x512"
+            href="{{ get_url(path='images/logo/ignitia-512x512.png') }}"
+        />
+
+        <!-- Web App Manifest -->
+        <link rel="manifest" href="{{ get_url(path='manifest.json') }}" />
+
+        <!-- Structured Data -->
+        <script type="application/ld+json">
+            {% block schema %}
+            {
+                "@context": "https://schema.org",
+                "@type": "SoftwareApplication",
+                "name": "Ignitia",
+                "description": "{{ config.description }}",
+                "applicationCategory": "DeveloperApplication",
+                "operatingSystem": "Cross-platform",
+                "programmingLanguage": "Rust",
+                "author": {
+                    "@type": "Person",
+                    "name": "Darshan Vichhi",
+                    "url": "{{ config.extra.github_url | default(value='https://github.com/AarambhDevHub') }}",
+                    "sameAs": [
+                        "{{ config.extra.youtube_url | default(value='https://www.youtube.com/@AarambhDevHub') }}",
+                        "https://medium.com/@aarambhdevhub"
+                    ]
+                },
+                "sourceOrganization": {
+                    "@type": "Organization",
+                    "name": "AarambhDevHub",
+                    "url": "{{ config.extra.github_url | default(value='https://github.com/AarambhDevHub') }}"
+                },
+                "codeRepository": "{{ config.extra.github_url | default(value='https://github.com/AarambhDevHub/ignitia') }}",
+                "downloadUrl": "https://crates.io/crates/ignitia",
+                "softwareVersion": "{{ config.extra.version | default(value='0.2.0') }}",
+                "license": "MIT",
+                "offers": {
+                    "@type": "Offer",
+                    "price": "0",
+                    "priceCurrency": "USD"
+                },
+                "screenshot": "{{ get_url(path='images/social/ignitia-og-1200x630.png') | safe }}",
+                "softwareHelp": {
+                    "@type": "CreativeWork",
+                    "url": "{{ get_url(path='docs/') | safe }}"
+                }
+            }
+            {% endblock schema %}
+        </script>
+
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+            rel="stylesheet"
+        />
+
+        <!-- Styles -->
+        <link rel="stylesheet" href="{{ get_url(path='style.css') }}" />
+        <link rel="stylesheet" href="{{ get_url(path='syntax.css') }}" />
+
+        <!-- Add this before your search.js script -->
+        <script src="https://unpkg.com/elasticlunr@0.9.5/elasticlunr.min.js"></script>
+
+        <!-- Favicon -->
+        <link
+            rel="icon"
+            type="image/x-icon"
+            href="{{ get_url(path='favicon.ico') }}"
+        />
+
+        <!-- Theme Script (inline to prevent flash) -->
+        <script>
+            // Get theme preference from localStorage or system preference
+            const getThemePreference = () => {
+                const stored = localStorage.getItem("theme");
+                if (stored) return stored;
+
+                return window.matchMedia("(prefers-color-scheme: dark)").matches
+                    ? "dark"
+                    : "light";
+            };
+
+            // Set theme immediately to prevent flash
+            const theme = getThemePreference();
+            document.documentElement.setAttribute("data-theme", theme);
+        </script>
+
+        {% block extra_head %}{% endblock %}
+    </head>
+    <body class="{% block body_class %}{% endblock %}">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <a href="{{ get_url(path='') }}" class="brand-link">
+                        <div class="logo-flame">🔥</div>
+                        <div class="brand-text">
+                            <span class="brand-name">Ignitia</span>
+                            <span class="brand-tagline"
+                                >Rust Web Framework</span
+                            >
+                        </div>
+                    </a>
+                </div>
+
+                <div class="nav-menu" id="nav-menu">
+                    <a href="{{ get_url(path='') }}" class="nav-link">Home</a>
+                    <a href="{{ get_url(path='docs') }}" class="nav-link"
+                        >Documentation</a
+                    >
+                    <a href="{{ get_url(path='examples') }}" class="nav-link"
+                        >Examples</a
+                    >
+                    <a href="{{ get_url(path='community') }}" class="nav-link"
+                        >Community</a
+                    >
+                    <a
+                        href="https://github.com/AarambhDevHub/ignitia"
+                        class="nav-link github-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <svg
+                            class="github-icon"
+                            viewBox="0 0 24 24"
+                            width="20"
+                            height="20"
+                        >
+                            <path
+                                fill="currentColor"
+                                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+                            />
+                        </svg>
+                    </a>
+
+                    <!-- Theme Toggle Button -->
+                    <button
+                        class="theme-toggle"
+                        id="theme-toggle"
+                        aria-label="Toggle theme"
+                        title="Toggle between light and dark theme"
+                    >
+                        <!-- Sun Icon (Light Mode) -->
+                        <svg
+                            class="theme-icon sun-icon"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                        >
+                            <path
+                                d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"
+                            />
+                        </svg>
+
+                        <!-- Moon Icon (Dark Mode) -->
+                        <svg
+                            class="theme-icon moon-icon"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                        >
+                            <path
+                                fill-rule="evenodd"
+                                d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z"
+                                clip-rule="evenodd"
+                            />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="nav-toggle" id="nav-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">{% block content %}{% endblock %}</main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-container">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <div class="logo-flame">🔥</div>
+                        <span class="footer-brand-name">Ignitia</span>
+                    </div>
+                    <p class="footer-description">
+                        A blazing fast, lightweight web framework for Rust that
+                        ignites your development journey.
+                    </p>
+                </div>
+
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>Framework</h4>
+                        <ul>
+                            <li>
+                                <a href="{{ get_url(path='docs') }}"
+                                    >Documentation</a
+                                >
+                            </li>
+                            <li>
+                                <a href="{{ get_url(path='examples') }}"
+                                    >Examples</a
+                                >
+                            </li>
+                            <li>
+                                <a href="https://crates.io/crates/ignitia"
+                                    >Crates.io</a
+                                >
+                            </li>
+                            <li>
+                                <a href="https://docs.rs/ignitia">API Docs</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-section">
+                        <h4>Community</h4>
+                        <ul>
+                            <li>
+                                <a
+                                    href="https://github.com/AarambhDevHub/ignitia"
+                                    >GitHub</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="https://github.com/AarambhDevHub/ignitia/issues"
+                                    >Issues</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="https://github.com/AarambhDevHub/ignitia/discussions"
+                                    >Discussions</a
+                                >
+                            </li>
+                            <li>
+                                <a href="{{ get_url(path='contributing') }}"
+                                    >Contributing</a
+                                >
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-section">
+                        <h4>Resources</h4>
+                        <ul>
+                            <li>
+                                <a href="{{ get_url(path='blog') }}">Blog</a>
+                            </li>
+                            <li>
+                                <a href="{{ get_url(path='changelog') }}"
+                                    >Changelog</a
+                                >
+                            </li>
+                            <li>
+                                <a href="{{ get_url(path='roadmap') }}"
+                                    >Roadmap</a
+                                >
+                            </li>
+                            <li>
+                                <a href="https://www.youtube.com/@AarambhDevHub"
+                                    >YouTube</a
+                                >
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-container">
+                    <p>
+                        &copy; {{ now() | date(format='%Y') }} AarambhDevHub.
+                        Built with ❤️ and Rust.
+                    </p>
+                    <p class="footer-version">
+                        Ignitia v{{ config.extra.version |
+                        default(value="0.2.0") }}
+                    </p>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Scripts -->
+        <script src="{{ get_url(path='js/main.js') }}"></script>
+        {% block extra_scripts %}{% endblock %}
+    </body>
+</html>

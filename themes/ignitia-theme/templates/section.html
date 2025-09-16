@@ -1,0 +1,237 @@
+{% extends "base.html" %} {% block body_class %}docs-section{% endblock %} {%
+block title %}{{ section.title }} - {{ config.title }}{% endblock %} {% block
+description %}{{ section.description | default(value=config.description) }}{%
+endblock %} {% block content %}
+<!-- Docs Layout -->
+<div class="docs-container">
+    <!-- Sidebar -->
+    <aside class="docs-sidebar">
+        <div class="sidebar-header">
+            <h3>📚 Documentation</h3>
+        </div>
+
+        <!-- Search Box -->
+        <div class="search-container">
+            <input
+                type="text"
+                id="search-input"
+                placeholder="Search docs..."
+                autocomplete="off"
+            />
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <!-- Navigation Tree -->
+        <nav class="sidebar-nav">
+            {% set docs_section = get_section(path="docs/_index.md") %} {% if
+            docs_section %}
+            <!-- Main docs section -->
+            <div class="nav-section">
+                <a
+                    href="{{ docs_section.permalink }}"
+                    class="nav-title {% if current_path == docs_section.path %}active{% endif %}"
+                >
+                    🏠 {{ docs_section.title }}
+                </a>
+            </div>
+
+            <!-- Subsections and pages -->
+            {% for subsection_path in docs_section.subsections %} {% set
+            subsection = get_section(path=subsection_path) %}
+            <div class="nav-section">
+                <a
+                    href="{{ subsection.permalink }}"
+                    class="nav-title {% if current_path is starts_with(subsection.path) %}active{% endif %}"
+                >
+                    📂 {{ subsection.title }}
+                </a>
+
+                <!-- Pages in this subsection -->
+                {% if subsection.pages %}
+                <ul class="nav-pages">
+                    {% for page in subsection.pages %}
+                    <li>
+                        <a
+                            href="{{ page.permalink }}"
+                            class="nav-page {% if current_path == page.path %}active{% endif %}"
+                        >
+                            📄 {{ page.title }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <!-- Direct pages in docs root -->
+            {% if docs_section.pages %}
+            <div class="nav-section">
+                <span class="nav-title">📑 Pages</span>
+                <ul class="nav-pages">
+                    {% for page in docs_section.pages %}
+                    <li>
+                        <a
+                            href="{{ page.permalink }}"
+                            class="nav-page {% if current_path == page.path %}active{% endif %}"
+                        >
+                            📄 {{ page.title }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %} {% endif %}
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="docs-content">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="/">🏠 Home</a>
+            <span class="breadcrumb-separator">></span>
+            <a href="/docs/">📚 Docs</a>
+            <!--{% for ancestor in section.ancestors %} {% set ancestor_section =
+            get_section(path=ancestor) %}-->
+            <!--<span class="breadcrumb-separator">></span>-->
+            <a href="{{ ancestor_section.permalink }}"
+                >{{ ancestor_section.title }}</a
+            >
+            {% endfor %}
+            <span class="breadcrumb-separator">></span>
+            <span class="breadcrumb-current">{{ section.title }}</span>
+        </nav>
+
+        <!-- Page Header -->
+        <header class="docs-header">
+            <h1 class="docs-title">{{ section.title }}</h1>
+            {% if section.description %}
+            <p class="docs-description">{{ section.description }}</p>
+            {% endif %}
+
+            <!-- Page Meta -->
+            <div class="docs-meta">
+                <span class="reading-time"
+                    >⏱️ {{ section.reading_time }} min read</span
+                >
+                <span class="word-count"
+                    >📝 {{ section.word_count }} words</span
+                >
+            </div>
+        </header>
+
+        <!-- Table of Contents -->
+        {% if section.toc %}
+        <div class="toc-container" style="margin-bottom: 2rem">
+            <h3>📋 Table of Contents</h3>
+            <nav class="toc">
+                <ul>
+                    {% for h1 in section.toc %}
+                    <li>
+                        <a href="{{ h1.permalink | safe }}">{{ h1.title }}</a>
+                        {% if h1.children %}
+                        <ul>
+                            {% for h2 in h1.children %}
+                            <li>
+                                <a href="{{ h2.permalink | safe }}"
+                                    >{{ h2.title }}</a
+                                >
+                                {% if h2.children %}
+                                <ul>
+                                    {% for h3 in h2.children %}
+                                    <li>
+                                        <a href="{{ h3.permalink | safe }}"
+                                            >{{ h3.title }}</a
+                                        >
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
+        <!-- Section Content -->
+        <div class="prose">{{ section.content | safe }}</div>
+
+        <!-- Section Pages -->
+        {% if section.pages %}
+        <section class="section-pages">
+            <h2>📋 Pages in this Section</h2>
+            <div class="pages-grid">
+                {% for page in section.pages %}
+                <article class="page-card">
+                    <h3><a href="{{ page.permalink }}">{{ page.title }}</a></h3>
+                    {% if page.description %}
+                    <p>{{ page.description }}</p>
+                    {% elif page.summary %}
+                    <p>{{ page.summary | safe }}</p>
+                    {% endif %}
+                    <div class="page-meta">
+                        <span class="reading-time"
+                            >⏱️ {{ page.reading_time }} min</span
+                        >
+                        {% if page.date %}
+                        <span class="date"
+                            >📅 {{ page.date | date(format="%Y-%m-%d") }}</span
+                        >
+                        {% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Subsections -->
+        {% if section.subsections %}
+        <section class="subsections">
+            <h2>📂 Subsections</h2>
+            <div class="subsections-grid">
+                {% for subsection_path in section.subsections %} {% set
+                subsection = get_section(path=subsection_path) %}
+                <article class="subsection-card">
+                    <h3>
+                        <a href="{{ subsection.permalink }}"
+                            >📂 {{ subsection.title }}</a
+                        >
+                    </h3>
+                    {% if subsection.description %}
+                    <p>{{ subsection.description }}</p>
+                    {% endif %}
+                    <div class="subsection-meta">
+                        <span class="page-count"
+                            >📄 {{ subsection.pages | length }} pages</span
+                        >
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Navigation -->
+        <nav class="docs-navigation">
+            {% if section.lower %}
+            <a href="{{ section.lower.permalink }}" class="nav-prev">
+                ← {{ section.lower.title }}
+            </a>
+            {% endif %} {% if section.higher %}
+            <a href="{{ section.higher.permalink }}" class="nav-next">
+                {{ section.higher.title }} →
+            </a>
+            {% endif %}
+        </nav>
+    </main>
+</div>
+{% endblock %} {% block extra_scripts %}
+<script src="{{ get_url(path='js/search.js') }}"></script>
+{% endblock %}

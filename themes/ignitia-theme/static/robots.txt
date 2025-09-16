@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Main sitemap
+Sitemap: https://ignitia.dev/sitemap.xml
+
+# RSS Feed
+Sitemap: https://ignitia.dev/atom.xml
+
+# Disallow admin/build files if any
+Disallow: /admin/
+Disallow: /*.json$
