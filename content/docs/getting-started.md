@@ -18,7 +18,7 @@ Add Ignitia to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ignitia = "0.2.0"
+ignitia = "0.2.1"
 tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 ```
@@ -27,7 +27,7 @@ For additional features, add them to your dependency:
 
 ```toml
 [dependencies]
-ignitia = { version = "0.2.0", features = ["websocket", "tls"] }
+ignitia = { version = "0.2.1", features = ["websocket", "tls"] }
 ```
 
 Available features:
@@ -318,7 +318,7 @@ Enable real-time communication with WebSockets:
 
 ```toml
 [dependencies]
-ignitia = { version = "0.2.0", features = ["websocket"] }
+ignitia = { version = "0.2.1", features = ["websocket"] }
 ```
 
 ```rust

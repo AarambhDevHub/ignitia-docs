@@ -33,7 +33,7 @@ external_links_no_referrer = true
 smart_punctuation = true
 
 [extra]
-version = "0.2.0"
+version = "0.2.1"
 author = "Darshan Vichhi"
 keywords = ["rust", "web framework", "async", "performance", "api", "websocket"]
 github_url = "https://github.com/AarambhDevHub/ignitia"
