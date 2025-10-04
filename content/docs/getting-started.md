@@ -18,7 +18,7 @@ Add Ignitia to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ignitia = "0.2.1"
+ignitia = "0.2.4"
 tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 ```
@@ -27,7 +27,7 @@ For additional features, add them to your dependency:
 
 ```toml
 [dependencies]
-ignitia = { version = "0.2.1", features = ["websocket", "tls"] }
+ignitia = { version = "0.2.4", features = ["websocket", "tls"] }
 ```
 
 Available features:
@@ -94,7 +94,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
 
         // Route with path parameters
-        .get("/users/:id", |Path(id): Path<u32>| async move {
+        .get("/users/{id}", |Path(id): Path<u32>| async move {
             Ok(Response::json(User {
                 id,
                 name: "John Doe".to_string(),
@@ -144,7 +144,7 @@ struct UserQuery {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let router = Router::new()
         // Path parameters
-        .get("/users/:id", |Path(id): Path<u32>| async move {
+        .get("/users/{id}", |Path(id): Path<u32>| async move {
             Ok(Response::text(format!("User ID: {}", id)))
         })
 
@@ -171,7 +171,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
 
         // Multiple extractors
-        .post("/complex/:id", |
+        .post("/complex/{id}", |
             Path(id): Path<u32>,
             Query(params): Query<HashMap<String, String>>,
             Json(body): Json<serde_json::Value>,
@@ -318,7 +318,7 @@ Enable real-time communication with WebSockets:
 
 ```toml
 [dependencies]
-ignitia = { version = "0.2.1", features = ["websocket"] }
+ignitia = { version = "0.2.4", features = ["websocket"] }
 ```
 
 ```rust
@@ -388,14 +388,14 @@ curl "http://127.0.0.1:3000/search?q=rust"
 
 Now that you have the basics, explore these guides for more advanced features:
 
-- **[Routing Guide](ROUTING_GUIDE.md)** - Advanced routing patterns and nested routes
-- **[Middleware Guide](MIDDLEWARE_GUIDE.md)** - Custom middleware and built-in options
-- **[Extractors](EXTRACTORS.md)** - All available request extractors
-- **[Error Handling](ERROR_HANDLING.md)** - Custom errors and error handling strategies
-- **[WebSockets](WEB_SOCKETS.md)** - Real-time communication features
-- **[File Uploads](FILE_UPLOADS.md)** - Handling multipart form data
-- **[Server Config](SERVER_CONFIG.md)** - HTTPS, HTTP/2, and server optimization
-- **[Security](SECURITY.md)** - Security best practices and middleware
+- **[Routing Guide](/docs/routing/)** - Advanced routing patterns and nested routes
+- **[Middleware Guide](/docs/middleware/)** - Custom middleware and built-in options
+- **[Extractors](/docs/extractors/)** - All available request extractors
+- **[Error Handling](/docs/error-handling/)** - Custom errors and error handling strategies
+- **[WebSockets](/docs/websockets/)** - Real-time communication features
+- **[File Uploads](/docs/file-uploads/)** - Handling multipart form data
+- **[Server Config](/docs/server-configuration/)** - HTTPS, HTTP/2, and server optimization
+- **[Security](/docs/security/)** - Security best practices and middleware
 
 ## Performance Tips
 

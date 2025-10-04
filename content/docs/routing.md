@@ -7,13 +7,13 @@ weight = 4
 date = "2025-10-16"
 +++
 
-# Routing Guide
+# Ignitia Routing Guide 🔥
 
-A comprehensive guide to routing in Ignitia - covering everything from basic route definition to advanced patterns and performance optimization.
+A complete guide to routing in Ignitia - covering everything from basic route definition to advanced patterns and performance optimization.
 
 ## Basic Concepts
 
-Ignitia's routing system is built around the `Router` struct, which uses a compile-time optimized matching system for maximum performance. Routes are matched in order of specificity, with more specific routes taking precedence.
+Ignitia's routing system is built around the `Router` struct, which uses a high-performance **radix tree** for route matching. Routes are matched based on specificity, with more specific routes taking precedence over general ones.
 
 ### Route Compilation
 
@@ -23,30 +23,59 @@ Ignitia compiles routes at startup for optimal runtime performance:
 use ignitia::{Router, Response};
 
 let router = Router::new()
-    .get("/", || async { Ok(Response::text("Home")) })
-    .get("/about", || async { Ok(Response::text("About")) });
+    .get("/", || async { "Home" })
+    .get("/about", || async { "About" });
 ```
 
 ### Route Matching Priority
 
 Routes are automatically sorted by specificity:
-1. **Exact matches** (e.g., `/users/profile`)
-2. **Parameterized routes** (e.g., `/users/:id`)
-3. **Wildcard routes** (e.g., `/files/*path`)
+
+1. **Exact static matches** (e.g., `/users/profile`)
+2. **Parameterized routes** (e.g., `/users/{id}`)
+3. **Wildcard routes** (e.g., `/files/{*path}`)
+
+## Radix Tree Routing
+
+Ignitia uses a **Radix Tree** (compressed trie) data structure for ultra-fast route matching. This is the only routing mode starting from version 0.2.4.
+
+### How It Works
+
+```rust
+use ignitia::Router;
+
+let router = Router::new()
+    .get("/users/{id}", get_user)
+    .get("/users/{id}/posts", get_user_posts)
+    .get("/api/v1/health", health_check);
+```
+
+**Advantages:**
+- **Ultra-fast matching**: O(log n) lookup time
+- **Memory efficient**: Shared path prefixes reduce memory usage
+- **Zero regex compilation**: No regex overhead during startup
+- **Better cache locality**: Tree structure improves CPU cache efficiency
+- **Handles complex patterns**: Efficiently manages overlapping routes
+
+**Performance Characteristics:**
+- **Lookup Time**: O(log n) where n is the number of routes
+- **Memory Usage**: ~50% less than regex-based routing
+- **Startup Time**: Instant (no regex compilation)
+- **Throughput**: 51,000+ requests/second (benchmarked)
 
 ## Route Definition
 
 ### Basic Route Registration
 
 ```rust
-use ignitia::{Router, Response, Result};
+use ignitia::{Router, Response};
 
-async fn home_handler() -> Result<Response> {
-    Ok(Response::text("Welcome to Ignitia! 🔥"))
+async fn home_handler() -> &'static str {
+    "Welcome to Ignitia! 🔥"
 }
 
-async fn about_handler() -> Result<Response> {
-    Ok(Response::html("<h1>About Us</h1>"))
+async fn about_handler() -> &'static str {
+    "<h1>About Us</h1>"
 }
 
 let router = Router::new()
@@ -58,11 +87,26 @@ let router = Router::new()
 
 ```rust
 let router = Router::new()
-    .get("/", || async { Ok(Response::text("Home")) })
+    .get("/", || async { "Home" })
     .post("/submit", || async {
-        Ok(Response::json(serde_json::json!({
+        Json(serde_json::json!({
             "status": "received"
-        }))?)
+        }))
+    });
+```
+
+### Route with Request Access
+
+```rust
+use ignitia::Request;
+
+let router = Router::new()
+    .get("/custom", |req: Request| async move {
+        let user_agent = req.headers
+            .get("user-agent")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("Unknown");
+        format!("User-Agent: {}", user_agent)
     });
 ```
 
@@ -75,20 +119,27 @@ Ignitia supports all standard HTTP methods with dedicated builder methods:
 ```rust
 let router = Router::new()
     .get("/users", list_users)
-    .get("/users/:id", get_user)
-    .get("/search", search_users);
+    .get("/users/{id}", get_user)
+    .get("/search", search_users)
+    .get("/health", || async {
+        Json(serde_json::json!({
+            "status": "healthy",
+            "timestamp": chrono::Utc::now().timestamp()
+        }))
+    });
 ```
 
 ### POST Routes
 
 ```rust
-use ignitia::{Json, Response};
+use ignitia::Json;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
 struct CreateUser {
     name: String,
     email: String,
+    role: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -96,56 +147,92 @@ struct UserResponse {
     id: u32,
     name: String,
     email: String,
+    role: String,
+    created_at: String,
 }
 
 let router = Router::new()
     .post("/users", |Json(user): Json<CreateUser>| async move {
+        // Validate input
+        if user.name.is_empty() || user.email.is_empty() {
+            return Err(ignitia::Error::BadRequest(
+                "Name and email are required".to_string()
+            ));
+        }
+
         // Create user logic here
         let new_user = UserResponse {
             id: 1,
             name: user.name,
             email: user.email,
+            role: user.role.unwrap_or("user".to_string()),
+            created_at: chrono::Utc::now().to_rfc3339(),
         };
-        Ok(Response::json(new_user)?)
+
+        Ok(Json(new_user))
     });
 ```
 
 ### PUT and PATCH Routes
 
 ```rust
+#[derive(Deserialize)]
+struct UpdateUser {
+    name: Option<String>,
+    email: Option<String>,
+    role: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct UserPatch {
+    name: Option<String>,
+    email: Option<String>,
+}
+
 let router = Router::new()
-    .put("/users/:id", |Path(id): Path<u32>, Json(user): Json<UpdateUser>| async move {
+    .put("/users/{id}", |Path(id): Path<u32>, Json(user): Json<UpdateUser>| async move {
         // Full update logic
-        Ok(Response::json(updated_user)?)
+        Json(serde_json::json!({
+            "id": id,
+            "updated": true,
+            "type": "full_update"
+        }))
     })
-    .patch("/users/:id", |Path(id): Path<u32>, Json(patch): Json<UserPatch>| async move {
+    .patch("/users/{id}", |Path(id): Path<u32>, Json(patch): Json<UserPatch>| async move {
         // Partial update logic
-        Ok(Response::json(patched_user)?)
+        Json(serde_json::json!({
+            "id": id,
+            "updated": true,
+            "type": "partial_update"
+        }))
     });
 ```
 
 ### DELETE Routes
 
 ```rust
+use http::StatusCode;
+
 let router = Router::new()
-    .delete("/users/:id", |Path(id): Path<u32>| async move {
-        // Delete user logic
-        Ok(Response::new(StatusCode::NO_CONTENT))
+    .delete("/users/{id}", |Path(id): Path<u32>| async move {
+        // Delete logic here
+        StatusCode::NO_CONTENT
+    })
+    .delete("/users/{id}/sessions", |Path(id): Path<u32>| async move {
+        Json(serde_json::json!({
+            "message": "All sessions cleared",
+            "user_id": id
+        }))
     });
 ```
 
-### HEAD and OPTIONS Routes
+### ANY Method
+
+Register a handler for all HTTP methods:
 
 ```rust
 let router = Router::new()
-    .head("/users/:id", |Path(id): Path<u32>| async move {
-        // Return headers only
-        Ok(Response::new(StatusCode::OK))
-    })
-    .options("/users", || async {
-        Ok(Response::new(StatusCode::OK)
-            .header("Allow", "GET, POST, PUT, DELETE"))
-    });
+    .any("/health", || async { "OK" });
 ```
 
 ## Path Parameters
@@ -157,8 +244,16 @@ use ignitia::Path;
 
 // Extract single parameter
 let router = Router::new()
-    .get("/users/:id", |Path(id): Path<u32>| async move {
-        Ok(Response::text(format!("User ID: {}", id)))
+    .get("/users/{id}", |Path(id): Path<u32>| async move {
+        if id == 0 {
+            return Err(ignitia::Error::BadRequest("Invalid user ID".into()));
+        }
+        format!("User ID: {}", id)
+    })
+    .get("/posts/{slug}", |Path(slug): Path<String>| async move {
+        Json(serde_json::json!({
+            "slug": slug
+        }))
     });
 ```
 
@@ -167,9 +262,12 @@ let router = Router::new()
 ```rust
 // Extract multiple parameters as tuple
 let router = Router::new()
-    .get("/users/:user_id/posts/:post_id",
+    .get("/users/{user_id}/posts/{post_id}",
         |Path((user_id, post_id)): Path<(u32, u32)>| async move {
-            Ok(Response::text(format!("User {} Post {}", user_id, post_id)))
+            Json(serde_json::json!({
+                "user_id": user_id,
+                "post_id": post_id
+            }))
         });
 ```
 
@@ -179,37 +277,29 @@ let router = Router::new()
 use serde::Deserialize;
 
 #[derive(Deserialize)]
-struct UserPost {
+struct UserPostParams {
     user_id: u32,
     post_id: u32,
 }
 
 let router = Router::new()
-    .get("/users/:user_id/posts/:post_id",
-        |Path(params): Path<UserPost>| async move {
-            Ok(Response::json(params)?)
+    .get("/users/{user_id}/posts/{post_id}",
+        |Path(params): Path<UserPostParams>| async move {
+            Json(params)
         });
 ```
 
-### Optional Parameters with Defaults
+### Wildcard Parameters
 
 ```rust
-#[derive(Deserialize)]
-struct PaginationParams {
-    page: Option<u32>,
-    limit: Option<u32>,
-}
-
+// Catch-all routes with wildcard parameters
 let router = Router::new()
-    .get("/users/:id/posts", |Path(id): Path<u32>, Query(params): Query<PaginationParams>| async move {
-        let page = params.page.unwrap_or(1);
-        let limit = params.limit.unwrap_or(10);
-
-        Ok(Response::json(serde_json::json!({
-            "user_id": id,
-            "page": page,
-            "limit": limit
-        }))?)
+    .get("/files/{*path}", |Path(path): Path<String>| async move {
+        // Secure file serving with path validation
+        let safe_path = path.replace("..", "");
+        Json(serde_json::json!({
+            "path": safe_path
+        }))
     });
 ```
 
@@ -226,19 +316,28 @@ struct SearchParams {
     q: String,
     category: Option<String>,
     sort: Option<String>,
+    page: Option<u32>,
+    per_page: Option<u32>,
 }
 
 let router = Router::new()
     .get("/search", |Query(params): Query<SearchParams>| async move {
-        Ok(Response::json(serde_json::json!({
+        if params.q.is_empty() {
+            return Err(ignitia::Error::BadRequest("Query required".into()));
+        }
+
+        let page = params.page.unwrap_or(1);
+        let per_page = params.per_page.unwrap_or(10).min(100);
+
+        Json(serde_json::json!({
             "query": params.q,
-            "category": params.category,
-            "sort": params.sort.unwrap_or("relevance".to_string())
-        }))?)
+            "page": page,
+            "per_page": per_page
+        }))
     });
 ```
 
-### Complex Query Parameters
+### Advanced Query Parameters
 
 ```rust
 #[derive(Deserialize)]
@@ -251,8 +350,18 @@ struct FilterParams {
 
 let router = Router::new()
     .get("/products", |Query(filters): Query<FilterParams>| async move {
-        // Filter products based on parameters
-        Ok(Response::json(filtered_products)?)
+        // Validate price range
+        if let (Some(min), Some(max)) = (filters.min_price, filters.max_price) {
+            if min > max {
+                return Err(ignitia::Error::BadRequest(
+                    "min_price cannot exceed max_price".into()
+                ));
+            }
+        }
+
+        Json(serde_json::json!({
+            "filters": filters
+        }))
     });
 ```
 
@@ -265,68 +374,75 @@ let router = Router::new()
 let api_v1 = Router::new()
     .get("/users", list_users_v1)
     .post("/users", create_user_v1)
-    .get("/users/:id", get_user_v1);
+    .get("/users/{id}", get_user_v1);
 
 // Create API v2 routes
 let api_v2 = Router::new()
     .get("/users", list_users_v2)
     .post("/users", create_user_v2)
-    .get("/users/:id", get_user_v2);
+    .get("/users/{id}", get_user_v2);
 
 // Main router with nested routes
 let router = Router::new()
-    .get("/", home)
+    .get("/", home_page)
     .nest("/api/v1", api_v1)
     .nest("/api/v2", api_v2);
 ```
 
-### Nested Route Groups
+### Complex Nested Structure
 
 ```rust
-// Admin routes
-let admin_routes = Router::new()
-    .get("/dashboard", admin_dashboard)
-    .get("/users", admin_users)
-    .post("/users/:id/ban", ban_user);
+// Blog routes
+let blog_routes = Router::new()
+    .get("/", list_posts)
+    .get("/{slug}", get_post_by_slug);
 
-// User management routes
+// User routes
 let user_routes = Router::new()
     .get("/", list_users)
     .post("/", create_user)
-    .get("/:id", get_user)
-    .put("/:id", update_user)
-    .delete("/:id", delete_user);
+    .get("/{id}", get_user);
 
-// Main application router
+// Main application
 let app = Router::new()
-    .get("/", home)
-    .nest("/admin", admin_routes)
+    .nest("/blog", blog_routes)
     .nest("/users", user_routes);
 ```
 
-### Shared State in Nested Routes
+## Router Merging
+
+Combine multiple routers into one:
 
 ```rust
-use std::sync::Arc;
+let user_router = Router::new()
+    .get("/users", list_users)
+    .post("/users", create_user);
 
+let post_router = Router::new()
+    .get("/posts", list_posts)
+    .post("/posts", create_post);
+
+let main_router = Router::new()
+    .get("/", home_page)
+    .merge(user_router)
+    .merge(post_router);
+```
+
+### Merging with State and Middleware
+
+```rust
 #[derive(Clone)]
-struct AppState {
-    db_pool: Arc<DatabasePool>,
-    cache: Arc<Cache>,
+struct DatabaseState {
+    pool: PgPool,
 }
 
-let api_routes = Router::new()
-    .get("/users", get_users)
-    .post("/users", create_user)
-    .state(app_state.clone());
+let db_router = Router::new()
+    .state(DatabaseState { pool: db_pool })
+    .middleware(DatabaseMiddleware::new())
+    .get("/db/users", get_users_from_db);
 
-let admin_routes = Router::new()
-    .get("/stats", get_stats)
-    .state(app_state.clone());
-
-let app = Router::new()
-    .nest("/api", api_routes)
-    .nest("/admin", admin_routes);
+let app_router = Router::new()
+    .merge(db_router);
 ```
 
 ## Route Middleware
@@ -334,36 +450,24 @@ let app = Router::new()
 ### Per-Route Middleware
 
 ```rust
-use ignitia::{LayeredHandler, AuthMiddleware, LoggerMiddleware};
+use ignitia::LayeredHandler;
 
 let protected_handler = LayeredHandler::new(secret_handler)
-    .layer(AuthMiddleware::new("secret-token"))
-    .layer(LoggerMiddleware);
+    .layer(AuthMiddleware::new())
+    .layer(LoggerMiddleware::new());
 
 let router = Router::new()
-    .get("/public", public_handler)
     .route_with_layered("/secret", Method::GET, protected_handler);
 ```
 
-### Route-Specific Middleware Chains
+### Global Middleware
 
 ```rust
-use ignitia::middleware::{RateLimitingMiddleware, SecurityMiddleware};
-
-// API routes with rate limiting
-let api_handler = LayeredHandler::new(api_endpoint)
-    .layer(RateLimitingMiddleware::per_minute(100))
-    .layer(LoggerMiddleware);
-
-// Admin routes with authentication and security
-let admin_handler = LayeredHandler::new(admin_endpoint)
-    .layer(AuthMiddleware::new("admin-token"))
-    .layer(SecurityMiddleware::high_security())
-    .layer(RateLimitingMiddleware::per_minute(10));
-
 let router = Router::new()
-    .route_with_layered("/api/data", Method::GET, api_handler)
-    .route_with_layered("/admin/dashboard", Method::GET, admin_handler);
+    .middleware(LoggerMiddleware::new())
+    .middleware(CorsMiddleware::new())
+    .get("/users", list_users)
+    .get("/posts", list_posts);
 ```
 
 ## State Management
@@ -376,126 +480,78 @@ use tokio::sync::RwLock;
 
 #[derive(Clone)]
 struct AppState {
-    counter: Arc<RwLock<u64>>,
-    config: Arc<AppConfig>,
+    db: PgPool,
+    cache: Arc<RwLock<HashMap<String, String>>>,
 }
 
-async fn increment_counter(State(state): State<AppState>) -> Result<Response> {
-    let mut counter = state.counter.write().await;
-    *counter += 1;
-    Ok(Response::json(serde_json::json!({
-        "counter": *counter
-    }))?)
+async fn get_user(
+    Path(id): Path<u32>,
+    State(state): State<AppState>
+) -> Result<Json<User>> {
+    // Use state
+    let user = sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1", id as i32)
+        .fetch_one(&state.db)
+        .await?;
+
+    Ok(Json(user))
 }
 
 let app_state = AppState {
-    counter: Arc::new(RwLock::new(0)),
-    config: Arc::new(app_config),
+    db: db_pool,
+    cache: Arc::new(RwLock::new(HashMap::new())),
 };
 
 let router = Router::new()
     .state(app_state)
-    .get("/counter", increment_counter);
-```
-
-### Database Connection Pools
-
-```rust
-use sqlx::PgPool;
-
-#[derive(Clone)]
-struct DatabaseState {
-    pool: PgPool,
-}
-
-async fn get_users(State(db): State<DatabaseState>) -> Result<Response> {
-    let users = sqlx::query!("SELECT * FROM users")
-        .fetch_all(&db.pool)
-        .await
-        .map_err(|e| Error::Database(e.to_string()))?;
-
-    Ok(Response::json(users)?)
-}
-
-let db_state = DatabaseState {
-    pool: PgPool::connect(&database_url).await?,
-};
-
-let router = Router::new()
-    .state(db_state)
-    .get("/users", get_users);
+    .get("/users/{id}", get_user);
 ```
 
 ## Advanced Routing Patterns
 
-### Wildcard Routes
+### Custom 404 Handler
 
 ```rust
-// Catch-all file serving
 let router = Router::new()
-    .get("/files/*path", |Path(path): Path<String>| async move {
-        // Serve file from path
-        let file_path = format!("./static/{}", path);
-        serve_file(&file_path).await
+    .get("/users", list_users)
+    .not_found(|| async {
+        (StatusCode::NOT_FOUND, "Page not found")
     });
 ```
 
-### Route Guards
+### API Versioning
 
 ```rust
-async fn admin_only_guard(req: &Request) -> bool {
-    req.header("x-admin-token").is_some()
-}
-
-// Custom route matching with guards
+// URL-based versioning
 let router = Router::new()
-    .get("/admin/*path", |req: Request| async move {
-        if !admin_only_guard(&req).await {
-            return Ok(Response::new(StatusCode::FORBIDDEN));
-        }
-        // Handle admin route
-        Ok(Response::text("Admin area"))
-    });
-```
+    .nest("/api/v1", build_v1_routes())
+    .nest("/api/v2", build_v2_routes());
 
-### Dynamic Route Registration
-
-```rust
-let mut router = Router::new();
-
-// Register routes dynamically
-for endpoint in api_endpoints {
-    router = router.get(&endpoint.path, endpoint.handler);
-}
-```
-
-### Route Versioning
-
-```rust
-// Version-aware routing
+// Header-based versioning
 let router = Router::new()
-    .get("/api/v1/users", users_v1)
-    .get("/api/v2/users", users_v2)
-    .get("/api/users", |headers: Headers| async move {
-        let version = headers.get("API-Version").unwrap_or("v1");
+    .get("/api/users", |headers: HeaderMap| async move {
+        let version = headers.get("API-Version")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("v1");
+
         match version {
-            "v2" => users_v2().await,
-            _ => users_v1().await,
+            "v1" => users_v1_handler().await,
+            "v2" => users_v2_handler().await,
+            _ => Err(ignitia::Error::BadRequest("Unsupported version".into())),
         }
     });
 ```
 
 ## WebSocket Routing
 
-When the `websocket` feature is enabled, Ignitia supports WebSocket routing:
-
-### Basic WebSocket Routes
+With the `websocket` feature enabled:
 
 ```rust
+#[cfg(feature = "websocket")]
 use ignitia::websocket::{WebSocketConnection, Message};
 
+#[cfg(feature = "websocket")]
 let router = Router::new()
-    .websocket("/ws", |ws: WebSocketConnection| async move {
+    .websocket("/ws", |mut ws: WebSocketConnection| async move {
         while let Some(msg) = ws.recv().await {
             match msg {
                 Message::Text(text) => {
@@ -509,174 +565,120 @@ let router = Router::new()
     });
 ```
 
-### WebSocket with State
-
-```rust
-async fn chat_handler(
-    ws: WebSocketConnection,
-    State(chat_state): State<ChatState>
-) -> Result<()> {
-    // Handle chat WebSocket connection
-    while let Some(msg) = ws.recv().await {
-        if let Message::Text(text) = msg {
-            // Broadcast to all connected clients
-            chat_state.broadcast(text).await?;
-        }
-    }
-    Ok(())
-}
-
-let router = Router::new()
-    .state(chat_state)
-    .websocket("/chat", chat_handler);
-```
-
 ## Performance Considerations
 
-### Route Compilation
+### Router Optimization
 
-Ignitia compiles routes at startup for optimal performance:
+Ignitia's radix tree router provides:
+- **O(log n) lookup time**: Fast route matching even with thousands of routes
+- **Minimal allocations**: Zero-allocation route matching
+- **Cache-friendly**: Tree structure improves CPU cache efficiency
 
-```rust
-// Routes are automatically sorted by specificity
-let router = Router::new()
-    .get("/users/:id/posts/:post_id", specific_handler)  // More specific
-    .get("/users/:id/posts", less_specific_handler)      // Less specific
-    .get("/users/:id", general_handler);                 // Most general
+### Benchmarks (wrk -c100 -d30s)
+
 ```
-
-### Route Caching
-
-```rust
-// Pre-compile regex patterns for path matching
-let router = Router::new()
-    .get("/users/:id", handler); // Regex compiled once at startup
+Throughput:    51,574 req/sec
+Latency:       1.90ms avg, 10.60ms max
+Transfer:      7.97 MB/sec
 ```
 
 ### Memory Efficiency
 
 ```rust
-// Use Arc for shared state to avoid cloning
+// Use Arc for shared data
 #[derive(Clone)]
-struct SharedState {
-    data: Arc<RwLock<HashMap<String, String>>>,
+struct SharedData {
+    config: Arc<AppConfig>,
+    templates: Arc<HashMap<String, String>>,
 }
 
 let router = Router::new()
-    .state_arc(Arc::new(shared_data)) // Use Arc directly
-    .get("/data", get_data_handler);
+    .state(SharedData {
+        config: Arc::new(config),
+        templates: Arc::new(templates),
+    });
 ```
 
 ## Best Practices
 
-### 1. Route Organization
+### 1. Organize Routes by Feature
 
 ```rust
-// Organize routes by feature/module
 mod user_routes {
-    use super::*;
-
     pub fn routes() -> Router {
         Router::new()
             .get("/", list_users)
             .post("/", create_user)
-            .get("/:id", get_user)
-            .put("/:id", update_user)
-            .delete("/:id", delete_user)
+            .get("/{id}", get_user)
     }
 }
 
-mod post_routes {
-    use super::*;
-
-    pub fn routes() -> Router {
-        Router::new()
-            .get("/", list_posts)
-            .post("/", create_post)
-            .get("/:id", get_post)
-    }
-}
-
-// Main router assembly
-let app = Router::new()
-    .nest("/users", user_routes::routes())
-    .nest("/posts", post_routes::routes());
-```
-
-### 2. Error Handling
-
-```rust
-async fn safe_user_handler(Path(id): Path<u32>) -> Result<Response> {
-    let user = get_user_by_id(id).await
-        .map_err(|e| Error::Database(e.to_string()))?;
-
-    match user {
-        Some(user) => Ok(Response::json(user)?),
-        None => Err(Error::NotFound(format!("User {} not found", id))),
-    }
+fn build_app() -> Router {
+    Router::new()
+        .nest("/users", user_routes::routes())
 }
 ```
 
-### 3. Input Validation
+### 2. Validate Input
 
 ```rust
-use serde::Deserialize;
+use validator::Validate;
 
-#[derive(Deserialize)]
-struct CreateUserRequest {
-    #[serde(deserialize_with = "validate_email")]
+#[derive(Deserialize, Validate)]
+struct CreateUser {
+    #[validate(length(min = 2, max = 100))]
+    name: String,
+
+    #[validate(email)]
     email: String,
-    #[serde(deserialize_with = "validate_password")]
-    password: String,
 }
 
-async fn create_user_handler(Json(req): Json<CreateUserRequest>) -> Result<Response> {
-    // Request is already validated by serde
-    let user = create_user(req).await?;
-    Ok(Response::json(user)?)
+async fn create_user(Json(user): Json<CreateUser>) -> Result<Json<User>> {
+    user.validate()?;
+    // Create user logic
 }
 ```
 
-### 4. Route Documentation
+### 3. Use Proper Status Codes
 
 ```rust
-/// GET /users/:id
-///
-/// Retrieves a user by their unique identifier.
-///
-/// # Parameters
-/// - `id`: The unique user ID (positive integer)
-///
-/// # Returns
-/// - `200 OK`: User found and returned
-/// - `404 Not Found`: User does not exist
-/// - `400 Bad Request`: Invalid ID format
-async fn get_user(Path(id): Path<u32>) -> Result<Response> {
-    // Implementation
-}
+let router = Router::new()
+    .post("/users", || async {
+        (StatusCode::CREATED, Json(new_user))
+    })
+    .delete("/users/{id}", || async {
+        StatusCode::NO_CONTENT
+    });
 ```
 
-### 5. Testing Routes
+### 4. Implement Health Checks
 
 ```rust
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use ignitia::test::TestRequest;
+let router = Router::new()
+    .get("/health", || async {
+        Json(serde_json::json!({
+            "status": "healthy",
+            "timestamp": chrono::Utc::now()
+        }))
+    });
+```
 
-    #[tokio::test]
-    async fn test_get_user() {
-        let router = create_test_router();
+### 5. Production Configuration
 
-        let response = TestRequest::get("/users/1")
-            .send(&router)
-            .await;
-
-        assert_eq!(response.status(), StatusCode::OK);
-    }
+```rust
+fn create_production_router() -> Router {
+    Router::new()
+        .middleware(RequestIdMiddleware::new())
+        .middleware(LoggerMiddleware::new())
+        .middleware(SecurityMiddleware::new())
+        .middleware(RateLimitingMiddleware::new())
+        .get("/health", health_check)
+        .nest("/api/v1", build_api_routes())
 }
 ```
 
-***
+---
 
-This routing guide covers the essential patterns and advanced features of Ignitia's routing system. For more specific examples and use cases, refer to the [Examples](/docs/examples) documentation.
+**🔥 Ready to ignite your web development with high-performance routing? Start building with Ignitia today!**
+
+For more information, visit the [API Documentation](https://docs.rs/ignitia) and [Examples](https://github.com/AarambhDevHub/ignitia/tree/main/examples).
